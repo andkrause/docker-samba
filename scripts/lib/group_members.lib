@@ -1,0 +1,62 @@
+## Library of functions to add users to existing groups and write a log that can be replayed
+
+
+help_commandline_user_to_group() {
+    echo "${progname:=groupadd} supports the following options: "
+    echo "  -g: group name (mandatory)"
+    echo "  -u: user name (mandatory)"
+    echo "  -h: this help :-)"
+}
+
+parse_commandline_user_to_group() {
+    group_name="";user_name="";help=false
+    while getopts "g:u:h" opt; do
+        case "$opt" in
+            
+            "g")
+                group_name="$OPTARG" ;;
+            
+            "u")
+                user_name="$OPTARG" ;;
+            
+            "h")
+                help=true
+                help_commandline_user_to_group
+                exit 0 ;;
+        esac
+        
+    done
+
+    if [ -z "$group_name" ]; then
+        echo "group name (-g flag) missing"
+        help_commandline_user_to_group
+        exit 1
+    fi
+
+    if [ -z "$user_name" ]; then
+        echo "user name (-u flag) missing"
+        help_commandline_user_to_group
+        exit 1
+    fi
+}
+
+# requires valid values for:
+#   $group_name; $user_name
+add_user_to_group() {
+
+    addgroup $user_name $group_name
+}
+
+write_user_to_group_log() {
+    echo "$group_name,$user_name" >> $groupmembers_log
+}
+
+
+
+parse_smbgroupmembers() {
+    group_name="";user_name=""
+    while IFS="," read group_name user_name; do
+        add_user_to_group
+        echo "assigned user \"$user_name\" to group \"$group_name\""
+    done < $groupmembers_log
+}

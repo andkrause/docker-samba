@@ -1,0 +1,5 @@
+## Set sensible defaults for relevant environment variables
+
+user_log=${USERLOG:="/etc/samba/smbusers"}
+group_log=${GROUPLOG:="/etc/samba/smbgroups"}
+groupmembers_log=${GROUPMEMBERLOG:="/etc/samba/smbgroupmembers"}

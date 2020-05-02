@@ -1,0 +1,16 @@
+version: '2.4'
+services:
+    smb:
+        image: andy008/smb:alpine-3.11
+        volumes:
+            - data:/media/storage
+            - config:/etc/samba/
+        ports:
+            - 139:139
+            - 445:445/tcp
+            - 445:445/udp
+volumes:
+    data:   
+    config:
+
+

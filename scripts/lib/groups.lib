@@ -1,0 +1,53 @@
+## Library of functions to add groups to the system and write a log that can be replayed
+
+help_commandline_group() {
+    echo "${progname:=groupadd} supports the following options: "
+    echo "  -g: group name (mandatory)"
+    echo "  -h: this help :-)"
+}
+
+parse_commandline_group() {
+    group_name="";group_id="";help=false
+    while getopts "g:h" opt; do
+        case "$opt" in
+            
+            "g")
+                group_name="$OPTARG" ;;
+
+            "h")
+                help=true
+                help_commandline_group
+                exit 0 ;;
+        esac
+        
+    done
+
+    if [ -z "$group_name" ]; then
+        echo "group name (-g flag) missing"
+        help_commandline_group
+        exit 1
+    fi
+}
+
+# requires valid values for:
+#   $group_name; $group_id
+add_system_group() {
+    if [ -n "$group_id" ]; then
+        add_id=" -g $group_id"
+    fi
+
+    addgroup $add_id -S $group_name
+    group_id=`getent group "$group_name" | cut -d: -f3`
+}
+
+write_group_log() {
+    echo "$group_name,$group_id" >> "$group_log"
+}
+
+parse_smbgroups() {
+    group_name=""
+    while IFS="," read group_name group_id; do
+        add_system_group
+        echo "created group \"$group_name\" ($group_id)"
+    done < "$group_log"
+}

@@ -1,0 +1,80 @@
+## Library of functions to add users to the system and write a log that can be replayed
+
+## system user stuff
+help_commandline_user() {
+    echo "${progname:=adduser} supports the following options: "
+    echo "  -u: username (mandatory)"
+    echo "  -p: password id (mandatory)"
+    echo "  -i: user id / uid (optional)"
+    echo "  -g: group name (optional)"
+    echo "  -h: this help :-)"
+}
+
+parse_commandline_user() {
+    user_name="";user_id="";group_name="";password="";help=false
+    while getopts "u:i:g:n:p:h" opt; do
+        case "$opt" in
+            "u")
+                user_name="$OPTARG" ;;
+
+            "i")
+                user_id="$OPTARG" ;;
+            
+            "g")
+                group_name="$OPTARG" ;;
+
+            "p") 
+                password="$OPTARG" ;;
+            
+            "h")
+                help=true
+                help_commandline_user
+                exit 0 ;;
+        esac
+        
+    done
+
+    if [ -z "$user_name" ]; then
+        echo "username (-u flag) missing"
+        help_commandline_user
+        exit 1
+    fi
+
+    if [ -z "$password" ]; then
+        echo "password (-p flag) missing"
+        help_commandline_user
+        exit 1
+    fi
+}
+
+# requires valid values for:
+#   $user_name; $user_id; $group_name
+add_system_user() {
+    if [ -n "$user_id" ]; then
+       adduser_options="$adduser_options --uid $user_id"
+    fi
+
+    if [ -n "$group_name" ]; then
+       adduser_options="$adduser_options --ingroup $group_name"
+    fi
+
+    adduser -D -H -s /bin/false $adduser_options $user_name
+    user_id=`id -u $user_name`
+    group_name=`id -g -n $user_name`
+}
+
+add_samba_user() {
+    echo $password | tee - | smbpasswd -sa $user_name
+}
+
+write_user_log() {
+    echo "$user_name,$user_id,$group_name" >> "$user_log"
+}
+
+parse_smbusers() {
+    group_name="";user_name="";user_id=""
+    while IFS="," read user_name user_id group_name; do
+        add_system_user
+        echo "added \"$user_name\" ($user_id) and mapped to group \"$group_name\""
+    done < "$user_log"
+}
