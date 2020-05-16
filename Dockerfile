@@ -17,7 +17,7 @@ RUN     apk add --no-cache tini samba-server samba-common-tools \
         && ln -s /opt/scripts/create_group_membership.sh /opt/scripts/create_group_membership 
         
 EXPOSE 139 445
-VOLUME ["/media/storage", "/etc/samba/"]
+VOLUME ["/etc/samba/"]
 ENTRYPOINT ["/sbin/tini","--","/opt/scripts/samba_start.sh"]
 
 CMD []
