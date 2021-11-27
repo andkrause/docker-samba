@@ -19,6 +19,5 @@ parse_smbgroupmembers
 
 ## Start samba server in foreground
 
-smbd --foreground --log-stdout --no-process-group
-
-
+# smbd --foreground --log-stdout --no-process-group
+smbd --foreground --debug-stdout --no-process-group
