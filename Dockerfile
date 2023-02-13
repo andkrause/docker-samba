@@ -1,4 +1,4 @@
-FROM alpine:3.17.0
+FROM alpine:3.17.2
 
 ENV PATH="/opt/scripts/:${PATH}"
 ENV USERLOG=/etc/samba/smbusers
